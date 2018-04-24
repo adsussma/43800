@@ -1,3 +1,4 @@
+//Global Variables
 var container, scene, camera, renderer, controls, stats;
 var keyboard = new THREEx.KeyboardState();
 var clock = new THREE.Clock();
@@ -7,9 +8,9 @@ wireList = [];
 var projector, mouse = {x: 0, y: 0};
 
 var tries = 1;
-var timeLimit = 30;
-var sequenceLength = 12;
-var sequence = createSequence();
+var timeLimit = 10;
+var sequenceLength = 4;
+var sequence = createSequence(sequenceLength);
 
 init();
 animate();
@@ -19,28 +20,28 @@ function init(){
 	
 	var SCREEN_WIDTH = window.innerWidth, SCREEN_HEIGHT = window.innerHeight;	
 	var VIEW_ANGLE = 45, ASPECT = SCREEN_WIDTH / SCREEN_HEIGHT, NEAR = 0.1, FAR = 20000;
-	camera = new THREE.PerspectiveCamera( VIEW_ANGLE, ASPECT, NEAR, FAR);
+	camera = new THREE.PerspectiveCamera(VIEW_ANGLE, ASPECT, NEAR, FAR);
 	scene.add(camera);
 	camera.position.set(0,0,250);
 	camera.lookAt(scene.position);	
 	
-	if ( Detector.webgl )
+	if (Detector.webgl)
 		renderer = new THREE.WebGLRenderer({antialias:true});
 	else
 		renderer = new THREE.CanvasRenderer(); 
 
 	renderer.setSize(SCREEN_WIDTH, SCREEN_HEIGHT);
-	container = document.getElementById( 'ThreeJS' );
-	container.appendChild( renderer.domElement );
+	container = document.getElementById('ThreeJS');
+	container.appendChild(renderer.domElement);
 	THREEx.WindowResize(renderer, camera);
 	
 	var light = new THREE.PointLight(0xffffff);
 	light.position.set(-100,200,100);
 	scene.add(light);
 	
-	controls = new THREE.OrbitControls( camera, renderer.domElement );
+	controls = new THREE.OrbitControls(camera, renderer.domElement);
 	var axes = new THREE.AxisHelper(100);
-	scene.add( axes );
+	scene.add(axes);
 	
 	//Create and set floor
 	/*
@@ -56,7 +57,7 @@ function init(){
 	*/
 	
 	var skyboxGeometry = new THREE.CubeGeometry(10000, 10000, 10000);
-	var skyboxMaterial = new THREE.MeshBasicMaterial({ color: 0x000000, side: THREE.BackSide });
+	var skyboxMaterial = new THREE.MeshBasicMaterial({color: 0x000000, side: THREE.BackSide});
 	var skybox = new THREE.Mesh(skyboxGeometry, skyboxMaterial);
 	scene.add(skybox);
 	
@@ -76,6 +77,10 @@ function init(){
 	clock_x = 0
 	clock_y = 57
 	clock_z = 3
+	
+	//Wire locations
+	wire_x = -15;
+	wire_z = -10;
 	
 	//Button locations
 	button_left = -30;
@@ -172,21 +177,21 @@ function init(){
 
 	//Create Wires
 	wireOne = new THREE.Mesh(wireGeometry, wireOneMaterial);
-	wireOne.position.x = -15;
+	wireOne.position.x = wire_x;
 	wireOne.position.y = 15;
-	wireOne.position.z = -10;
+	wireOne.position.z = wire_z;
 	wireOne.name = "Red wire";
 	base.add(wireOne);
 	wireTwo = new THREE.Mesh(wireGeometry, wireTwoMaterial);
-	wireTwo.position.x = -15;
+	wireTwo.position.x = wire_x;
 	wireTwo.position.y = 0;
-	wireTwo.position.z = -10;
+	wireTwo.position.z = wire_z;
 	wireTwo.name = "Green wire";
 	base.add(wireTwo);
 	wireThree = new THREE.Mesh(wireGeometry, wireThreeMaterial);
-	wireThree.position.x = -15;
+	wireThree.position.x = wire_x;
 	wireThree.position.y = -15;
-	wireThree.position.z = -10
+	wireThree.position.z = wire_z;
 	wireThree.name = "Blue wire";
 	base.add(wireThree);
 
@@ -303,13 +308,13 @@ function CustomSinCurve(scale){
 }
 
 //Creates defusal sequence of Object IDs, returns the sequence
-function createSequence(){
+function createSequence(len){
     var actions = ['12', '13', '14', '15', '16', '17', '18', 
 					'19', '20', '21', '22', '23', '24', '25', '26',];
 					
 	var seq = new Array;
 	
-	for(i = 0; i <= sequenceLength; i++){
+	for(i = 0; i <= len; i++){
 		index = Math.floor(Math.random() * actions.length)
 		seq.push(actions[index]);
 		actions.splice(index, 1);
@@ -319,7 +324,7 @@ function createSequence(){
 }
 
 //Returns true if the sequence length is 0. False otherwise.
-function isFinished(){
+function isDefused(){
 	if(sequence.length == 0){
 		return true 
 	}
@@ -434,7 +439,7 @@ function animate(){
 
 function update(){
 	controls.update();
-	if(isFinished()){
+	if(isDefused()){
 		console.log("You win!");
 	}
 }
