@@ -9,7 +9,7 @@ var projector, mouse = {x: 0, y: 0};
 
 var tries = 1;
 var timeLimit = 28.5;
-var sequenceLength = 10;
+var sequenceLength = 9;
 
 var x = 3000;
 var texture; 
@@ -74,7 +74,7 @@ function init(){
 	back_z = -10
 	
 	//Clock locations
-	timer_x = -25
+	timer_x = 21
 	timer_y = 60
 	timer_z = 3
 	
@@ -279,14 +279,6 @@ function init(){
 	base.position.z = base_z;
 	base.name = "Base";
 	scene.add(base);
-
-	//Create Timer
-	timer = new THREE.Mesh(timerGeometry, timerMaterial);
-	timer.position.x = timer_x;
-	timer.position.y = timer_y;
-	timer.position.z = timer_z;
-	timer.name = "Timer";
-	scene.add(timer);
 	
 	//Create back slot
 	backOne = new THREE.Mesh(backGeometryOne, backMaterial);
@@ -404,15 +396,23 @@ function init(){
 	buttonHash.name = "Hashtag";
 	base.add(buttonHash);
 	
+	//Create Timer
+	timer = new THREE.Mesh(timerGeometry, timerMaterial);
+	timer.position.x = timer_x;
+	timer.position.y = timer_y;
+	timer.position.z = timer_z;
+	timer.name = "Timer";
+	scene.add(timer);
+	
 	beeperOne = new THREE.Mesh(beepOneGeometry, beepOneMaterial);
-	beeperOne.position.x = 30;
+	beeperOne.position.x = -15;
 	beeperOne.position.y = 60;
 	beeperOne.position.z = 5;
 	beeperOne.rotation.x = Math.PI / 2;
 	base.add(beeperOne);
 	
 	beeperTwo = new THREE.Mesh(beepTwoGeometry, beepTwoMaterial);
-	beeperTwo.position.x = 10;
+	beeperTwo.position.x = -35;
 	beeperTwo.position.y = 60;
 	beeperTwo.position.z = 5;
 	beeperTwo.rotation.x = Math.PI / 2;
@@ -500,7 +500,14 @@ function startTimer(duration, scene) {
 		else{
 			if (--timer < 0) {
 				beeperOne.material.color.setHex(0xff9999);
-				codeContainer.innerHTML = "You Lose!";
+				codeContainer.innerHTML = "YOU LOSE!";
+				sequence = ['BOOM'];
+				clearInterval(interval);
+			}
+			if(tries == 0){
+				x = 0;
+				beeperOne.material.color.setHex(0xff9999);
+				codeContainer.innerHTML = "YOU LOSE!";
 				sequence = ['BOOM'];
 				clearInterval(interval);
 			}
@@ -530,7 +537,7 @@ function match(names,scene){
 	}
 	message = "";
 	for(i = 0; i < messageArray.length; i++){
-		message += messageArray[i];
+		message += " " + messageArray[i];
 	}
 
 	return encText;
@@ -594,6 +601,7 @@ function onClick(event){
 			}
 			//If the button that is clicked does not have the same id as the first element in the sequence array
 			else{
+				tries -= 1;
 				var color = 0xff9999;
 				//Set the color of the button to red.
 				buttonIntersects[0].object.material.color.setHex(color);
@@ -666,8 +674,9 @@ function animate(){
 function update(){
 	controls.update();
 	if(isDefused()){
+		x = 0;
 		beeperTwo.material.color.setHex(0x98e698);
-		codeContainer.innerHTML = "You Win!";
+		codeContainer.innerHTML = "YOU WIN!";
 	}
 }
 
@@ -692,10 +701,10 @@ function changeCanvas() {
 		context.fillRect(0, 0, 600, 600);
 		context.fillStyle = "red";
 		if(parseInt(x/100).toString().length == 1){
-			context.fillText(("00:0" + parseInt(x/100)), 40, 90);
+			context.fillText(("00:0" + parseInt(x/100)), 40, 100);
 		}
 		else{
-			context.fillText(("00:" + parseInt(x/100)), 40, 90);
+			context.fillText(("00:" + parseInt(x/100)), 40, 100);
 		}
 	
 		return canvas;
