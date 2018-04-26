@@ -11,7 +11,7 @@ var tries = 1;
 var timeLimit = 30;
 var sequenceLength = 10;
 
-var x = 3000;
+var x = 1850;
 var texture; 
 
 var messageArray = [];
@@ -74,8 +74,8 @@ function init(){
 	back_z = -10
 	
 	//Clock locations
-	timer_x = 0
-	timer_y = 58
+	timer_x = -25
+	timer_y = 60
 	timer_z = 3
 	
 	//Wire locations
@@ -101,17 +101,7 @@ function init(){
 	var baseMaterial = new THREE.MeshBasicMaterial({color: 0xa6a6a6});
 
 	//clock
-	var timerGeometry = new THREE.CubeGeometry(90, 25, 10);
-	var canvas = document.createElement('canvas');
-    var ctx1 = canvas.getContext('2d');	
-    ctx1.font = "Bold 100px Arial";
-    ctx1.shadowBlur = "7";
-    ctx1.fillStyle = "#CCC";
-    ctx1.fillRect(0, 0, 600, 600);
-    ctx1.fillStyle = "#000";
-    ctx1.fillText('1:00', 60, 110);
-
-
+	var timerGeometry = new THREE.CubeGeometry(40, 20, 10);
 	texture = new THREE.Texture(changeCanvas());
     var materials = [];
     var timerMaterial = new THREE.MeshBasicMaterial( { map: texture } );
@@ -692,15 +682,16 @@ function changeCanvas() {
 	}
 	else{
 		x = x-1;
+
 		var canvas = document.getElementById('canvas');
-		var ctx1 = canvas.getContext("2d");
-			ctx1.clearRect(0,0,600,600);
-			ctx1.font = "Bold 70px Arial";
-			ctx1.shadowBlur = "7";
-			ctx1.fillStyle = "#CCC";
-			ctx1.fillRect(0, 0, 600, 600);
-			ctx1.fillStyle = "#000";
-			ctx1.fillText(x, 20, 100);
+		var context = canvas.getContext("2d");
+			context.clearRect(0,0,600,600);
+			context.font = "Bold 50px Orbitron";
+			context.shadowBlur = "7";
+			context.fillStyle = "#CCC";
+			context.fillRect(0, 0, 600, 600);
+			context.fillStyle = "#000";
+			context.fillText(x, 80, 90);
 		return canvas;
 	}
 }
