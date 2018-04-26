@@ -8,10 +8,10 @@ wireList = [];
 var projector, mouse = {x: 0, y: 0};
 
 var tries = 1;
-var timeLimit = 30;
+var timeLimit = 28.5;
 var sequenceLength = 10;
 
-var x = 1850;
+var x = 3000;
 var texture; 
 
 var messageArray = [];
@@ -679,19 +679,25 @@ function render(){
 
 function changeCanvas() {
 	if (x<=0){
+		x = 0;
 	}
 	else{
-		x = x-1;
-
+		x = (x-1.675);
 		var canvas = document.getElementById('canvas');
 		var context = canvas.getContext("2d");
-			context.clearRect(0,0,600,600);
-			context.font = "Bold 50px Orbitron";
-			context.shadowBlur = "7";
-			context.fillStyle = "#CCC";
-			context.fillRect(0, 0, 600, 600);
-			context.fillStyle = "#000";
-			context.fillText(x, 80, 90);
+		context.clearRect(0,0,600,600);
+		context.font = "Bold 60px Orbitron";
+		context.shadowBlur = "7";
+		context.fillStyle = "#262626";
+		context.fillRect(0, 0, 600, 600);
+		context.fillStyle = "red";
+		if(parseInt(x/100).toString().length == 1){
+			context.fillText(("00:0" + parseInt(x/100)), 40, 90);
+		}
+		else{
+			context.fillText(("00:" + parseInt(x/100)), 40, 90);
+		}
+	
 		return canvas;
 	}
 }
