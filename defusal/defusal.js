@@ -11,6 +11,9 @@ var tries = 1;
 var timeLimit = 30;
 var sequenceLength = 10;
 
+var x = 1500
+var texture; 
+
 var messageArray = [];
 var alphabetArray = shuffleAlphabet();
 var sequence = createSequence(sequenceLength);
@@ -71,9 +74,9 @@ function init(){
 	back_z = -10
 	
 	//Clock locations
-	clock_x = 0
-	clock_y = 58
-	clock_z = 3
+	timer_x = 0
+	timer_y = 58
+	timer_z = 3
 	
 	//Wire locations
 	wire_x = -15;
@@ -96,6 +99,25 @@ function init(){
 	//Base attributes
 	var baseGeometry = new THREE.CubeGeometry(100, 150, 15);
 	var baseMaterial = new THREE.MeshBasicMaterial({color: 0xa6a6a6});
+
+	//clock
+	var timerGeometry = new THREE.CubeGeometry(90, 25, 10);
+	var textBox = document.getElementById('textBox');
+    var ctx1 = textBox.getContext('2d');	
+    ctx1.font = "Bold 100px Arial";
+    ctx1.shadowBlur = "7";
+    ctx1.fillStyle = "#CCC";
+    ctx1.fillRect(0, 0, 600, 600);
+    ctx1.fillStyle = "#000";
+    ctx1.fillText('1:00', 60, 110);
+
+
+	texture = new THREE.Texture(changeCanvas());
+    var materials = [];
+    var timerMaterial = new THREE.MeshBasicMaterial( { map: texture } );
+    for ( var i = 0; i < 6; i ++ ) {
+         materials.push( timerMaterial );
+    }
 	
 	//Wire slot attributes
 	var backGeometryOne = new THREE.CubeGeometry(10, 140, 15);
@@ -266,6 +288,14 @@ function init(){
 	base.position.z = base_z;
 	base.name = "Base";
 	scene.add(base);
+
+	//Create Timer
+	timer = new THREE.Mesh(timerGeometry, timerMaterial);
+	timer.position.x = timer_x;
+	timer.position.y = timer_y;
+	timer.position.z = timer_z;
+	timer.name = "Timer";
+	scene.add(timer);
 	
 	//Create back slot
 	backOne = new THREE.Mesh(backGeometryOne, backMaterial);
@@ -651,5 +681,24 @@ function update(){
 }
 
 function render(){
+	changeCanvas();
+ 	texture.needsUpdate = true;
 	renderer.render(scene, camera);
+}
+
+function changeCanvas() {
+	if (x<=0){
+	}
+	else{
+		x = x-1;
+		var canvas = document.getElementById('textBox');
+		var ctx1 = canvas.getContext("2d");
+		ctx1.font = "Bold 10px Arial";
+		ctx1.shadowBlur = "7";
+		ctx1.fillStyle = "#CCC";
+		ctx1.fillRect(0, 0, 100, 100);
+		ctx1.fillStyle = "#000";
+		ctx1.fillText(x, 10, 10);
+		return canvas;
+	}
 }
