@@ -11,7 +11,7 @@ var tries = 1;
 var timeLimit = 30;
 var sequenceLength = 10;
 
-var x = 1500
+var x = 3000;
 var texture; 
 
 var messageArray = [];
@@ -102,8 +102,8 @@ function init(){
 
 	//clock
 	var timerGeometry = new THREE.CubeGeometry(90, 25, 10);
-	var textBox = document.getElementById('textBox');
-    var ctx1 = textBox.getContext('2d');	
+	var canvas = document.createElement('canvas');
+    var ctx1 = canvas.getContext('2d');	
     ctx1.font = "Bold 100px Arial";
     ctx1.shadowBlur = "7";
     ctx1.fillStyle = "#CCC";
@@ -118,6 +118,7 @@ function init(){
     for ( var i = 0; i < 6; i ++ ) {
          materials.push( timerMaterial );
     }
+
 	
 	//Wire slot attributes
 	var backGeometryOne = new THREE.CubeGeometry(10, 140, 15);
@@ -691,14 +692,15 @@ function changeCanvas() {
 	}
 	else{
 		x = x-1;
-		var canvas = document.getElementById('textBox');
+		var canvas = document.getElementById('canvas');
 		var ctx1 = canvas.getContext("2d");
-		ctx1.font = "Bold 10px Arial";
-		ctx1.shadowBlur = "7";
-		ctx1.fillStyle = "#CCC";
-		ctx1.fillRect(0, 0, 100, 100);
-		ctx1.fillStyle = "#000";
-		ctx1.fillText(x, 10, 10);
+			ctx1.clearRect(0,0,600,600);
+			ctx1.font = "Bold 70px Arial";
+			ctx1.shadowBlur = "7";
+			ctx1.fillStyle = "#CCC";
+			ctx1.fillRect(0, 0, 600, 600);
+			ctx1.fillStyle = "#000";
+			ctx1.fillText(x, 20, 100);
 		return canvas;
 	}
 }
