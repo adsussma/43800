@@ -8,9 +8,19 @@ wireList = [];
 var projector, mouse = {x: 0, y: 0};
 
 var tries = 1;
-var timeLimit = 10;
-var sequenceLength = 4;
+var timeLimit = 30;
+var sequenceLength = 10;
+
+var messageArray = [];
+var alphabetArray = shuffleAlphabet();
 var sequence = createSequence(sequenceLength);
+
+var timeContainer = document.getElementById("time");
+var textContainer = document.getElementById("key");
+var codeContainer = document.getElementById("seq");
+var encodeText;
+var message = "";
+
 
 init();
 animate();
@@ -23,7 +33,7 @@ function init(){
 	camera = new THREE.PerspectiveCamera(VIEW_ANGLE, ASPECT, NEAR, FAR);
 	scene.add(camera);
 	camera.position.set(0,0,250);
-	camera.lookAt(scene.position);	
+	camera.lookAt(scene.position);
 	
 	if (Detector.webgl)
 		renderer = new THREE.WebGLRenderer({antialias:true});
@@ -42,19 +52,6 @@ function init(){
 	controls = new THREE.OrbitControls(camera, renderer.domElement);
 	var axes = new THREE.AxisHelper(100);
 	scene.add(axes);
-	
-	//Create and set floor
-	/*
-	var floorTexture = new THREE.ImageUtils.loadTexture('floor.png');
-	floorTexture.wrapS = floorTexture.wrapT = THREE.RepeatWrapping; 
-	floorTexture.repeat.set(10, 10);
-	var floorMaterial = new THREE.MeshBasicMaterial({map: floorTexture, side: THREE.DoubleSide});
-	var floorGeometry = new THREE.PlaneGeometry(1000, 1000, 10, 10);
-	var floor = new THREE.Mesh(floorGeometry, floorMaterial);
-	floor.position.y = -0.5;
-	floor.rotation.x = Math.PI / 2;
-	scene.add(floor);
-	*/
 	
 	var skyboxGeometry = new THREE.CubeGeometry(10000, 10000, 10000);
 	var skyboxMaterial = new THREE.MeshBasicMaterial({color: 0x000000, side: THREE.BackSide});
@@ -75,7 +72,7 @@ function init(){
 	
 	//Clock locations
 	clock_x = 0
-	clock_y = 57
+	clock_y = 58
 	clock_z = 3
 	
 	//Wire locations
@@ -87,23 +84,28 @@ function init(){
 	button_middle = 0;
 	button_right = 30;
 	button_z = 5;
-	button_top = 30;
-	button_upper = 0;
-	button_lower = -30;
-	button_bottom = -60;
+	button_top = 35;
+	button_upper = 5;
+	button_lower = -25;
+	button_bottom = -55;
+	
+	font = "Bold 100px Arial";
+	font_color = "rgb(0, 0, 0, 0.6)";
+	button_color = "#fff2e6"
 	
 	//Base attributes
 	var baseGeometry = new THREE.CubeGeometry(100, 150, 15);
-	var baseMaterial = new THREE.MeshBasicMaterial({color: 0x404040});
+	var baseMaterial = new THREE.MeshBasicMaterial({color: 0xa6a6a6});
 	
 	//Wire slot attributes
 	var backGeometryOne = new THREE.CubeGeometry(10, 140, 15);
 	var backGeometryTwo = new THREE.CubeGeometry(70, 40, 15);
-	var backMaterial = new THREE.MeshBasicMaterial({color: 0x808080});
+	var backMaterial = new THREE.MeshBasicMaterial({color: 0x8c8c8c});
 	
-	//Clock attributes
-	var clockGeometry = new THREE.CubeGeometry(90, 25, 10);
-	var clockMaterial = new THREE.MeshBasicMaterial({color:0x808080});
+	var beepOneGeometry = new THREE.CylinderGeometry(7, 7, 10, 32);
+	var beepOneMaterial = new THREE.MeshBasicMaterial({color: 0x8c8c8c});
+	var beepTwoGeometry = new THREE.CylinderGeometry(7, 7, 10, 32);
+	var beepTwoMaterial = new THREE.MeshBasicMaterial({color: 0x8c8c8c});
 	
 	//Wire attributes
 	CustomSinCurve.prototype = Object.create( THREE.Curve.prototype );
@@ -122,21 +124,140 @@ function init(){
 	var wireOneMaterial = new THREE.MeshBasicMaterial({color:0xff3333});
 	var wireTwoMaterial = new THREE.MeshBasicMaterial({color:0x5cd65c});
 	var wireThreeMaterial = new THREE.MeshBasicMaterial({color:0x4d94ff});
-	
+
 	//Button attributes
 	var buttonGeometry = new THREE.CubeGeometry(22, 22, 10);
-	var buttonOneMaterial = new THREE.MeshBasicMaterial({color:0xcccccc});
-	var buttonTwoMaterial = new THREE.MeshBasicMaterial({color:0xcccccc});
-	var buttonThreeMaterial = new THREE.MeshBasicMaterial({color:0xcccccc});
-	var buttonFourMaterial = new THREE.MeshBasicMaterial({color:0xcccccc});
-	var buttonFiveMaterial = new THREE.MeshBasicMaterial({color:0xcccccc});
-	var buttonSixMaterial = new THREE.MeshBasicMaterial({color:0xcccccc});
-	var buttonSevenMaterial = new THREE.MeshBasicMaterial({color:0xcccccc});
-	var buttonEightMaterial = new THREE.MeshBasicMaterial({color:0xcccccc});
-	var buttonNineMaterial = new THREE.MeshBasicMaterial({color:0xcccccc});
-	var buttonAsteriskMaterial = new THREE.MeshBasicMaterial({color:0xcccccc});
-	var buttonZeroMaterial = new THREE.MeshBasicMaterial({color:0xcccccc});
-	var buttonHashMaterial = new THREE.MeshBasicMaterial({color:0xcccccc});
+	var buttonOneCanvas = document.createElement('canvas');
+	var buttonOneContext = buttonOneCanvas.getContext('2d');
+	buttonOneContext.font = font;
+	buttonOneContext.fillStyle = button_color ;
+	buttonOneContext.fillRect(0, 0, 600, 600);
+	buttonOneContext.fillStyle = font_color;
+    buttonOneContext.fillText('1', 125, 110);
+	var buttonOneTexture = new THREE.Texture(buttonOneCanvas);
+	buttonOneTexture.needsUpdate = true;
+	var buttonOneMaterial = new THREE.MeshBasicMaterial({color: 0xffffe6, map:buttonOneTexture});
+	
+	var buttonTwoCanvas = document.createElement('canvas');
+	var buttonTwoContext = buttonTwoCanvas.getContext('2d');
+	buttonTwoContext.font = font;
+	buttonTwoContext.fillStyle = button_color ;
+	buttonTwoContext.fillRect(0, 0, 600, 600);
+	buttonTwoContext.fillStyle = font_color;
+	buttonTwoContext.fillText('2', 125, 110);
+	var buttonTwoTexture = new THREE.Texture(buttonTwoCanvas);
+	buttonTwoTexture.needsUpdate = true;
+	var buttonTwoMaterial = new THREE.MeshBasicMaterial({color: 0xffffe6, map:buttonTwoTexture});
+	
+	var buttonThreeCanvas = document.createElement('canvas');
+	var buttonThreeContext = buttonThreeCanvas.getContext('2d');
+	buttonThreeContext.font = font;
+	buttonThreeContext.fillStyle = button_color ;
+	buttonThreeContext.fillRect(0, 0, 600, 600);
+	buttonThreeContext.fillStyle = font_color;
+	buttonThreeContext.fillText('3', 125, 110);
+	var buttonThreeTexture = new THREE.Texture(buttonThreeCanvas);
+	buttonThreeTexture.needsUpdate = true;
+	var buttonThreeMaterial = new THREE.MeshBasicMaterial({color: 0xffffe6, map:buttonThreeTexture});
+	
+	var buttonFourCanvas = document.createElement('canvas');
+	var buttonFourContext = buttonFourCanvas.getContext('2d');
+	buttonFourContext.font = font;
+	buttonFourContext.fillStyle = button_color ;
+	buttonFourContext.fillRect(0, 0, 600, 600);
+	buttonFourContext.fillStyle = font_color;
+	buttonFourContext.fillText('4', 125, 110);
+	var buttonFourTexture = new THREE.Texture(buttonFourCanvas);
+	buttonFourTexture.needsUpdate = true;
+	var buttonFourMaterial = new THREE.MeshBasicMaterial({color: 0xffffe6, map:buttonFourTexture});
+	
+	var buttonFiveCanvas = document.createElement('canvas');
+	var buttonFiveContext = buttonFiveCanvas.getContext('2d');
+	buttonFiveContext.font = font;
+	buttonFiveContext.fillStyle = button_color ;
+	buttonFiveContext.fillRect(0, 0, 600, 600);
+	buttonFiveContext.fillStyle = font_color;
+	buttonFiveContext.fillText('5', 125, 110);
+	var buttonFiveTexture = new THREE.Texture(buttonFiveCanvas);
+	buttonFiveTexture.needsUpdate = true;
+	var buttonFiveMaterial = new THREE.MeshBasicMaterial({color: 0xffffe6, map:buttonFiveTexture});
+	
+	var buttonSixCanvas = document.createElement('canvas');
+	var buttonSixContext = buttonSixCanvas.getContext('2d');
+	buttonSixContext.font = font;
+	buttonSixContext.fillStyle = button_color ;
+	buttonSixContext.fillRect(0, 0, 600, 600);
+	buttonSixContext.fillStyle = font_color;
+	buttonSixContext.fillText('6', 125, 110);
+	var buttonSixTexture = new THREE.Texture(buttonSixCanvas);
+	buttonSixTexture.needsUpdate = true;
+	var buttonSixMaterial = new THREE.MeshBasicMaterial({color: 0xffffe6, map:buttonSixTexture});
+	
+	var buttonSevenCanvas = document.createElement('canvas');
+	var buttonSevenContext = buttonSevenCanvas.getContext('2d');
+	buttonSevenContext.font = font;
+	buttonSevenContext.fillStyle = button_color ;
+	buttonSevenContext.fillRect(0, 0, 600, 600);
+	buttonSevenContext.fillStyle = font_color;
+	buttonSevenContext.fillText('7', 125, 110);
+	var buttonSevenTexture = new THREE.Texture(buttonSevenCanvas);
+	buttonSevenTexture.needsUpdate = true;
+	var buttonSevenMaterial = new THREE.MeshBasicMaterial({color: 0xffffe6, map:buttonSevenTexture});
+	
+	var buttonEightCanvas = document.createElement('canvas');
+	var buttonEightContext = buttonEightCanvas.getContext('2d');
+	buttonEightContext.font = font;
+	buttonEightContext.fillStyle = button_color ;
+	buttonEightContext.fillRect(0, 0, 600, 600);
+	buttonEightContext.fillStyle = font_color;
+	buttonEightContext.fillText('8', 125, 110);
+	var buttonEightTexture = new THREE.Texture(buttonEightCanvas);
+	buttonEightTexture.needsUpdate = true;
+	var buttonEightMaterial = new THREE.MeshBasicMaterial({color: 0xffffe6, map:buttonEightTexture});
+	
+	var buttonNineCanvas = document.createElement('canvas');
+	var buttonNineContext = buttonNineCanvas.getContext('2d');
+	buttonNineContext.font = font;
+	buttonNineContext.fillStyle = button_color ;
+	buttonNineContext.fillRect(0, 0, 600, 600);
+	buttonNineContext.fillStyle = font_color;
+	buttonNineContext.fillText('9', 125, 110);
+	var buttonNineTexture = new THREE.Texture(buttonNineCanvas);
+	buttonNineTexture.needsUpdate = true;
+	var buttonNineMaterial = new THREE.MeshBasicMaterial({color: 0xffffe6, map:buttonNineTexture});
+	
+	var buttonAsteriskCanvas = document.createElement('canvas');
+	var buttonAsteriskContext = buttonAsteriskCanvas.getContext('2d');
+	buttonAsteriskContext.font = font;
+	buttonAsteriskContext.fillStyle = button_color ;
+	buttonAsteriskContext.fillRect(0, 0, 600, 600);
+	buttonAsteriskContext.fillStyle = font_color;
+	buttonAsteriskContext.fillText('*', 125, 110);
+	var buttonAsteriskTexture = new THREE.Texture(buttonAsteriskCanvas);
+	buttonAsteriskTexture.needsUpdate = true;
+	var buttonAsteriskMaterial = new THREE.MeshBasicMaterial({color: 0xffffe6, map:buttonAsteriskTexture});
+	
+	var buttonZeroCanvas = document.createElement('canvas');
+	var buttonZeroContext = buttonZeroCanvas.getContext('2d');
+	buttonZeroContext.font = font;
+	buttonZeroContext.fillStyle = button_color ;
+	buttonZeroContext.fillRect(0, 0, 600, 600);
+	buttonZeroContext.fillStyle = font_color;
+	buttonZeroContext.fillText('0', 125, 110);
+	var buttonZeroTexture = new THREE.Texture(buttonZeroCanvas);
+	buttonZeroTexture.needsUpdate = true;
+	var buttonZeroMaterial = new THREE.MeshBasicMaterial({color: 0xffffe6, map:buttonZeroTexture});
+	
+	var buttonHashCanvas = document.createElement('canvas');
+	var buttonHashContext = buttonHashCanvas.getContext('2d');
+	buttonHashContext.font = font;
+	buttonHashContext.fillStyle = button_color ;
+	buttonHashContext.fillRect(0, 0, 600, 600);
+	buttonHashContext.fillStyle = font_color;
+	buttonHashContext.fillText('#', 125, 110);
+	var buttonHashTexture = new THREE.Texture(buttonHashCanvas);
+	buttonHashTexture.needsUpdate = true;
+	var buttonHashMaterial = new THREE.MeshBasicMaterial({color: 0xffffe6, map:buttonHashTexture});
 	
 	//Create Base
     base = new THREE.Mesh(baseGeometry, baseMaterial);
@@ -167,13 +288,6 @@ function init(){
 	backFour.position.y = back_bottom;
 	backFour.position.z = back_z;
 	base.add(backFour);
-
-	//Create Clock face
-	clock = new THREE.Mesh(clockGeometry, clockMaterial);
-	clock.position.x = clock_x;
-	clock.position.y = clock_y;
-	clock.position.z = clock_z;
-	base.add(clock);
 
 	//Create Wires
 	wireOne = new THREE.Mesh(wireGeometry, wireOneMaterial);
@@ -268,6 +382,20 @@ function init(){
 	buttonHash.position.z = button_z;
 	buttonHash.name = "Hashtag";
 	base.add(buttonHash);
+	
+	beeperOne = new THREE.Mesh(beepOneGeometry, beepOneMaterial);
+	beeperOne.position.x = 30;
+	beeperOne.position.y = 60;
+	beeperOne.position.z = 5;
+	beeperOne.rotation.x = Math.PI / 2;
+	base.add(beeperOne);
+	
+	beeperTwo = new THREE.Mesh(beepTwoGeometry, beepTwoMaterial);
+	beeperTwo.position.x = 10;
+	beeperTwo.position.y = 60;
+	beeperTwo.position.z = 5;
+	beeperTwo.rotation.x = Math.PI / 2;
+	base.add(beeperTwo);
 
 	// List of all buttons. Used to find which button is clicked
 	buttonList.push(buttonOne);
@@ -289,9 +417,12 @@ function init(){
 	wireList.push(wireThree);
 	
 	seq = getObjectNames(base, sequence);
-	saveSequence(seq);
-	console.log(seq);
-
+	encodeText = match(seq,base);
+	
+	startTimer(timeLimit, base);
+	textContainer.innerHTML = encodeText;
+	codeContainer.innerHTML = message;
+	
 	projector = new THREE.Projector();
 	
 	//Event Listeners look for special event i.e. mousedown or mouseup
@@ -309,8 +440,8 @@ function CustomSinCurve(scale){
 
 //Creates defusal sequence of Object IDs, returns the sequence
 function createSequence(len){
-    var actions = ['12', '13', '14', '15', '16', '17', '18', 
-					'19', '20', '21', '22', '23', '24', '25', '26',];
+    var actions = ['11', '12', '13', '14', '15', '16', '17', 
+					'18', '19', '20', '21', '22', '23', '24', '25',];
 					
 	var seq = new Array;
 	
@@ -321,6 +452,67 @@ function createSequence(len){
 	}
 
 	return seq;
+}
+
+function startTimer(duration, scene) {
+    var timer = duration, minutes, seconds;
+    var interval = setInterval(function () {
+        minutes = parseInt(timer / 60, 10);
+        seconds = parseInt(timer % 60, 10);
+
+        minutes = minutes < 10 ? "0" + minutes : minutes;
+        seconds = seconds < 10 ? "0" + seconds : seconds;
+
+		if (seconds % 2 === 0){
+			beeperOne.material.color.setHex(0xff9999);
+		}
+		else {
+			beeperOne.material.color.setHex(0x8c8c8c);
+		}
+		
+        timeContainer.innerHTML = minutes + ":" + seconds;
+		console.log(seconds);
+		
+		if(isDefused()){
+			beeperOne.material.color.setHex(0x8c8c8c);
+		}
+		else{
+			if (--timer < 0) {
+				beeperOne.material.color.setHex(0xff9999);
+				codeContainer.innerHTML = "You Lose!";
+				sequence = ['BOOM'];
+				clearInterval(interval);
+			}
+        }
+    }, 1000);
+}
+
+function match(names,scene){
+	var used = names;
+	var encText ="";
+	
+	var index;
+	var placment;
+	for(i = 0; i <= sequenceLength; i ++){
+		index = Math.floor(Math.random() * used.length);
+		
+		encText +=  alphabetArray[i] + " = " + used[index] + "<br/> ";
+		
+		for(f in sequence){
+			if(((scene.getObjectById(parseInt(sequence[f]))).name).toString() == used[index]){
+				placement = f;
+			}
+		}
+		messageArray[placement] = alphabetArray[i];
+		used.splice(index,1);
+		
+	}
+	message = "";
+	for(i = 0; i < messageArray.length; i++){
+		message += messageArray[i];
+	}
+
+	return encText;
 }
 
 //Returns true if the sequence length is 0. False otherwise.
@@ -337,7 +529,7 @@ function isDefused(){
 function resetButton(event){
 	for(i = 0; i <= buttonList.length; i++){
 		try{
-			var color = 0xcccccc;
+			var color = 0xffffe6;
 			buttonList[i].material.color.setHex(color);
 			buttonList[i].position.z = 5;
 		}
@@ -371,7 +563,7 @@ function onClick(event){
 			
 			//If the button that is clicked has the same id as the first element in the sequence array
 			if(sequence[0] == buttonIntersects[0].object.id){
-				var color = 0x5cd65c;
+				var color = 0x98e698;
 				//Set the color of the button green.
 				buttonIntersects[0].object.material.color.setHex(color);
 				//Simulate the button being clicked by changing the z position.
@@ -381,7 +573,7 @@ function onClick(event){
 			}
 			//If the button that is clicked does not have the same id as the first element in the sequence array
 			else{
-				var color = 0xff3333;
+				var color = 0xff9999;
 				//Set the color of the button to red.
 				buttonIntersects[0].object.material.color.setHex(color);
 				//Simulate the button being clicked by changing the z position.
@@ -425,10 +617,23 @@ function getObjectNames(scene, array){
 	return seq;
 }
 
-//Saves the sequence as a cookie. Could be used to have the defusal code displayed on a different page.
-function saveSequence(string){
-	document.cookie = "sequence=" + string;
-	console.log(document.cookie);
+function shuffleAlphabet() {
+	var alphabetArray = ['A','B','C','D','E','F','G','H','I','J','K','L','M','N','O','P','Q','R','S','T','U','V','W','X','Y','Z'];
+	var currentIndex = alphabetArray.length
+	var temp
+	var Index;
+
+	while (currentIndex !== 0) {
+		Index = Math.floor(Math.random() * currentIndex);
+		currentIndex -= 1;
+
+		// And swap it with the current element.
+		temp = alphabetArray[currentIndex];
+		alphabetArray[currentIndex] = alphabetArray[Index];
+		alphabetArray[Index] = temp;
+	}
+
+  return alphabetArray;
 }
 
 function animate(){
@@ -440,7 +645,8 @@ function animate(){
 function update(){
 	controls.update();
 	if(isDefused()){
-		console.log("You win!");
+		beeperTwo.material.color.setHex(0x98e698);
+		codeContainer.innerHTML = "You Win!";
 	}
 }
 
