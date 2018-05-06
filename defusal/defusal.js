@@ -8,17 +8,16 @@ wireList = [];
 var projector, mouse = {x: 0, y: 0};
 
 var tries = 1;
-var timeLimit = 28.5;
 var sequenceLength = 9;
 
-var x = 3000;
+var timeLimit = 30;
+var interval = setInterval(checkTime, 1000);
 var texture; 
 
 var messageArray = [];
 var alphabetArray = shuffleAlphabet();
 var sequence = createSequence(sequenceLength);
 
-var timeContainer = document.getElementById("time");
 var textContainer = document.getElementById("key");
 var codeContainer = document.getElementById("seq");
 var encodeText;
@@ -102,23 +101,16 @@ function init(){
 
 	//clock
 	var timerGeometry = new THREE.CubeGeometry(40, 20, 10);
-	texture = new THREE.Texture(changeCanvas());
-    var materials = [];
-    var timerMaterial = new THREE.MeshBasicMaterial( { map: texture } );
-    for ( var i = 0; i < 6; i ++ ) {
-         materials.push( timerMaterial );
-    }
 
-	
 	//Wire slot attributes
 	var backGeometryOne = new THREE.CubeGeometry(10, 140, 15);
 	var backGeometryTwo = new THREE.CubeGeometry(70, 40, 15);
 	var backMaterial = new THREE.MeshBasicMaterial({color: 0x8c8c8c});
 	
-	var beepOneGeometry = new THREE.CylinderGeometry(7, 7, 10, 32);
-	var beepOneMaterial = new THREE.MeshBasicMaterial({color: 0x8c8c8c});
-	var beepTwoGeometry = new THREE.CylinderGeometry(7, 7, 10, 32);
-	var beepTwoMaterial = new THREE.MeshBasicMaterial({color: 0x8c8c8c});
+	var lightOneGeometry = new THREE.CylinderGeometry(7, 7, 10, 32);
+	var lightOneMaterial = new THREE.MeshBasicMaterial({color: 0x8c8c8c});
+	var lightTwoGeometry = new THREE.CylinderGeometry(7, 7, 10, 32);
+	var lightTwoMaterial = new THREE.MeshBasicMaterial({color: 0x8c8c8c});
 	
 	//Wire attributes
 	CustomSinCurve.prototype = Object.create( THREE.Curve.prototype );
@@ -261,16 +253,16 @@ function init(){
 	buttonZeroTexture.needsUpdate = true;
 	var buttonZeroMaterial = new THREE.MeshBasicMaterial({color: 0xffffe6, map:buttonZeroTexture});
 	
-	var buttonHashCanvas = document.createElement('canvas');
-	var buttonHashContext = buttonHashCanvas.getContext('2d');
-	buttonHashContext.font = font;
-	buttonHashContext.fillStyle = button_color ;
-	buttonHashContext.fillRect(0, 0, 600, 600);
-	buttonHashContext.fillStyle = font_color;
-	buttonHashContext.fillText('#', 125, 110);
-	var buttonHashTexture = new THREE.Texture(buttonHashCanvas);
-	buttonHashTexture.needsUpdate = true;
-	var buttonHashMaterial = new THREE.MeshBasicMaterial({color: 0xffffe6, map:buttonHashTexture});
+	var buttonPoundCanvas = document.createElement('canvas');
+	var buttonPoundContext = buttonPoundCanvas.getContext('2d');
+	buttonPoundContext.font = font;
+	buttonPoundContext.fillStyle = button_color ;
+	buttonPoundContext.fillRect(0, 0, 600, 600);
+	buttonPoundContext.fillStyle = font_color;
+	buttonPoundContext.fillText('#', 125, 110);
+	var buttonPoundTexture = new THREE.Texture(buttonPoundCanvas);
+	buttonPoundTexture.needsUpdate = true;
+	var buttonPoundMaterial = new THREE.MeshBasicMaterial({color: 0xffffe6, map:buttonPoundTexture});
 	
 	//Create Base
     base = new THREE.Mesh(baseGeometry, baseMaterial);
@@ -279,6 +271,13 @@ function init(){
 	base.position.z = base_z;
 	base.name = "Base";
 	scene.add(base);
+	
+	texture = new THREE.Texture(checkTime(base));
+    var materials = [];
+    var timerMaterial = new THREE.MeshBasicMaterial({map: texture});
+    for ( var i = 0; i < 6; i ++ ) {
+         materials.push( timerMaterial );
+    }
 	
 	//Create back slot
 	backOne = new THREE.Mesh(backGeometryOne, backMaterial);
@@ -389,12 +388,12 @@ function init(){
 	buttonZero.position.z = button_z;	
 	buttonZero.name = "Zero";
 	base.add(buttonZero);
-	buttonHash = new THREE.Mesh(buttonGeometry, buttonHashMaterial);
-	buttonHash.position.x = button_right;
-	buttonHash.position.y = button_bottom;
-	buttonHash.position.z = button_z;
-	buttonHash.name = "Hashtag";
-	base.add(buttonHash);
+	buttonPound = new THREE.Mesh(buttonGeometry, buttonPoundMaterial);
+	buttonPound.position.x = button_right;
+	buttonPound.position.y = button_bottom;
+	buttonPound.position.z = button_z;
+	buttonPound.name = "Pound";
+	base.add(buttonPound);
 	
 	//Create Timer
 	timer = new THREE.Mesh(timerGeometry, timerMaterial);
@@ -404,19 +403,19 @@ function init(){
 	timer.name = "Timer";
 	scene.add(timer);
 	
-	beeperOne = new THREE.Mesh(beepOneGeometry, beepOneMaterial);
-	beeperOne.position.x = -15;
-	beeperOne.position.y = 60;
-	beeperOne.position.z = 5;
-	beeperOne.rotation.x = Math.PI / 2;
-	base.add(beeperOne);
+	lightOne = new THREE.Mesh(lightOneGeometry, lightOneMaterial);
+	lightOne.position.x = -15;
+	lightOne.position.y = 60;
+	lightOne.position.z = 5;
+	lightOne.rotation.x = Math.PI / 2;
+	base.add(lightOne);
 	
-	beeperTwo = new THREE.Mesh(beepTwoGeometry, beepTwoMaterial);
-	beeperTwo.position.x = -35;
-	beeperTwo.position.y = 60;
-	beeperTwo.position.z = 5;
-	beeperTwo.rotation.x = Math.PI / 2;
-	base.add(beeperTwo);
+	lightTwo = new THREE.Mesh(lightTwoGeometry, lightTwoMaterial);
+	lightTwo.position.x = -35;
+	lightTwo.position.y = 60;
+	lightTwo.position.z = 5;
+	lightTwo.rotation.x = Math.PI / 2;
+	base.add(lightTwo);
 
 	// List of all buttons. Used to find which button is clicked
 	buttonList.push(buttonOne);
@@ -430,7 +429,7 @@ function init(){
 	buttonList.push(buttonNine);
 	buttonList.push(buttonAsterisk);
 	buttonList.push(buttonZero);
-	buttonList.push(buttonHash);
+	buttonList.push(buttonPound);
 	
 	// List of all wires. Used to find which wire is clicked
 	wireList.push(wireOne);
@@ -440,7 +439,6 @@ function init(){
 	seq = getObjectNames(base, sequence);
 	encodeText = match(seq,base);
 	
-	startTimer(timeLimit, base);
 	textContainer.innerHTML = encodeText;
 	codeContainer.innerHTML = message;
 	
@@ -475,44 +473,54 @@ function createSequence(len){
 	return seq;
 }
 
-function startTimer(duration, scene) {
-    var timer = duration, minutes, seconds;
-    var interval = setInterval(function () {
-        minutes = parseInt(timer / 60, 10);
-        seconds = parseInt(timer % 60, 10);
+function checkTime(){
+	console.log(timeLimit);
+	var canvas = document.getElementById('canvas');
+	var context = canvas.getContext("2d");
+	context.clearRect(0,0,600,600);
+	context.font = "Bold 60px Orbitron";
+	context.shadowBlur = "7";
+	context.fillStyle = "#262626";
+	context.fillRect(0, 0, 600, 600);
+	context.fillStyle = "red";
+	
+	if(timeLimit.toString().length == 1){
+		context.fillText("00:0" + timeLimit, 40, 100);
+	}
+	else{
+		context.fillText("00:" + timeLimit, 40, 100);
+	}
+	
+	timeLimit -= 1;
+	return canvas;
+}
 
-        minutes = minutes < 10 ? "0" + minutes : minutes;
-        seconds = seconds < 10 ? "0" + seconds : seconds;
-
-		if (seconds % 2 === 0){
-			beeperOne.material.color.setHex(0xff9999);
-		}
-		else {
-			beeperOne.material.color.setHex(0x8c8c8c);
-		}
+function triggerQueues(scene){
+	if (timeLimit % 2 === 0){
+		lightOne.material.color.setHex(0xff9999);
+	}
+	else {
+		lightOne.material.color.setHex(0x8c8c8c);
+	}
 		
-        timeContainer.innerHTML = minutes + ":" + seconds;
-		console.log(seconds);
-		
-		if(isDefused()){
-			beeperOne.material.color.setHex(0x8c8c8c);
-		}
-		else{
-			if (--timer < 0) {
-				beeperOne.material.color.setHex(0xff9999);
-				codeContainer.innerHTML = "YOU LOSE!";
-				sequence = ['BOOM'];
-				clearInterval(interval);
-			}
-			if(tries == 0){
-				x = 0;
-				beeperOne.material.color.setHex(0xff9999);
-				codeContainer.innerHTML = "YOU LOSE!";
-				sequence = ['BOOM'];
-				clearInterval(interval);
-			}
-        }
-    }, 1000);
+	if(isDefused()){
+		lightOne.material.color.setHex(0x8c8c8c);
+		clearInterval(interval);
+	}
+	
+	if(timeLimit < 0){
+		lightOne.material.color.setHex(0xff9999);
+		codeContainer.innerHTML = "YOU LOSE!";
+		sequence = ['BOOM'];
+		clearInterval(interval);
+	}
+	
+	if(tries == 0){
+		lightOne.material.color.setHex(0xff9999);
+		codeContainer.innerHTML = "YOU LOSE!";
+		sequence = ['BOOM'];
+		clearInterval(interval);
+	}
 }
 
 function match(names,scene){
@@ -673,40 +681,16 @@ function animate(){
 
 function update(){
 	controls.update();
+	
+	triggerQueues(scene);
+	
 	if(isDefused()){
-		x = 0;
-		beeperTwo.material.color.setHex(0x98e698);
+		lightTwo.material.color.setHex(0x98e698);
 		codeContainer.innerHTML = "YOU WIN!";
 	}
 }
 
 function render(){
-	changeCanvas();
- 	texture.needsUpdate = true;
+	texture.needsUpdate = true;
 	renderer.render(scene, camera);
-}
-
-function changeCanvas() {
-	if (x<=0){
-		x = 0;
-	}
-	else{
-		x = (x-1.675);
-		var canvas = document.getElementById('canvas');
-		var context = canvas.getContext("2d");
-		context.clearRect(0,0,600,600);
-		context.font = "Bold 60px Orbitron";
-		context.shadowBlur = "7";
-		context.fillStyle = "#262626";
-		context.fillRect(0, 0, 600, 600);
-		context.fillStyle = "red";
-		if(parseInt(x/100).toString().length == 1){
-			context.fillText(("00:0" + parseInt(x/100)), 40, 100);
-		}
-		else{
-			context.fillText(("00:" + parseInt(x/100)), 40, 100);
-		}
-	
-		return canvas;
-	}
 }
